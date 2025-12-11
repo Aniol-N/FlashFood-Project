@@ -36,7 +36,7 @@ class UserController
     }
 
 
-    //update 
+    //update
     public function update(): void
     {
         // Validación para que un usuario no pueda actualizar su cuenta si no esta logueado.
@@ -48,10 +48,12 @@ class UserController
         $old_username = $_SESSION["user"];
         $new_email = $_POST["new_username"];
         $new_password = $_POST["new_password"];
+        $new_fecha_nacimiento = $_POST["new_fecha_nacimiento"]; // hay que poner el id
 
         // Validar que los inputs no esten vacíos.
-        if (empty($new_email) || empty($new_password)) {
-            $_SESSION['error'] = 'El nuevo nombre de usuario y la nueva contraseña no deben estar vacíos.';
+        // adaptacion para que tambien valide fecha nacimiento
+        if (empty($new_email) || empty($new_password) || empty($new_fecha_nacimiento)) {
+            $_SESSION['error'] = 'El nuevo nombre de usuario, la nueva contraseña, y la nueva fecha de nacimiento no deben estar vacíos.';
             echo '<script>window.location.href = "../view/update_profile.php";</script>';
             exit();
         }
@@ -59,7 +61,6 @@ class UserController
         if (!empty($new_password)) {
             $new_password = password_hash($new_password, PASSWORD_DEFAULT);
         }
-
         // Verificar si el correo ya existe en la base de datos.
         $stmt = $this->conn->prepare("SELECT COUNT(*) AS count FROM users WHERE email = :new_username AND email != :old_username");
         $stmt->bindParam(':new_username', $new_email, PDO::PARAM_STR);
@@ -76,15 +77,18 @@ class UserController
 
         try {
             // Actualizar el usuario.
-            $stmt = $this->conn->prepare("UPDATE users SET email=:new_username, password=:new_password WHERE email=:old_username");
+            // adapto el sql statement y el bind para que funcione tambien con fecha nacimiento
+            $stmt = $this->conn->prepare("UPDATE users SET email=:new_username, password=:new_password, fecha_nacimiento=:fecha_nacimiento WHERE email=:old_username");
             $stmt->bindParam(':new_username', $new_email, PDO::PARAM_STR);
             $stmt->bindParam(':new_password', $new_password, PDO::PARAM_STR);
+            $stmt->bindParam(':fecha_nacimiento', $new_fecha_nacimiento, PDO::PARAM_STR);
             $stmt->bindParam(':old_username', $old_username, PDO::PARAM_STR);
             $stmt->execute();
 
             // Actualizar el nuevo nombre email.
             $_SESSION['user'] = $new_email;
             $_SESSION["password"] = $_POST["new_password"];
+            $_SESSION["fecha_nacimiento"] = $_POST["new_fecha_nacimiento"];
             // Actualizar el nuevo email para que se muestre en el perfil.
             $_SESSION['showName'] = $new_email;
 
@@ -149,7 +153,7 @@ class UserController
         // La variable de sesion sera true si el usuario es admin o false si no lo es.
         $_SESSION["admin"] = $user['admin'] == 1;
 
-        // Si es admin va a adminprofile.php y si es user va a profile.php 
+        // Si es admin va a adminprofile.php y si es user va a profile.php
         $redirect_url = $_SESSION["admin"] ? "../view/admin_profile.php" : "../view/profile.php";
         echo '<script>window.location.href = "' . $redirect_url . '";</script>';
         exit();
@@ -202,14 +206,14 @@ class UserController
         $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
         // Preparar la consulta SQL
-            // añadir fecha_nacimiento en la consulta SQL
+        // añadir fecha_nacimiento en la consulta SQL
         $stmt = $this->conn->prepare("INSERT INTO users (email, password, admin, fecha_nacimiento) VALUES (:username, :password, :admin, :fecha_nacimiento)");
         $stmt->bindParam(':username', $username, PDO::PARAM_STR);
         $stmt->bindParam(':password', $hashed_password, PDO::PARAM_STR);
         $stmt->bindParam(':admin', $admin, PDO::PARAM_INT);
         // bind fecha_nacimiento
         $stmt->bindParam(':fecha_nacimiento', $fecha_nacimiento, PDO::PARAM_STR);
-        
+
         // Ejecutar la consulta SQL
         if ($stmt->execute()) {
             // Registro exitoso, establecer variables de sesión y redirigir
