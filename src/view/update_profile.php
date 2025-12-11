@@ -30,6 +30,7 @@ if (isset($_SESSION['error'])) {
     <?php
     $mail = isset($_SESSION['user']) ? $_SESSION['user'] : '';
     $password = isset($_SESSION['password']) ? $_SESSION['password'] : '';
+    $fechaNacimiento = isset($_SESSION["fecha_nacimiento"]) ? $_SESSION["fecha_nacimiento"] : '';
     ?>
     <div class="container">
         <div class="center">
@@ -40,16 +41,20 @@ if (isset($_SESSION['error'])) {
                     <div class="moverInput">
                         <label>Modificar Email:</label><br>
                         <input id="usuario" type="text" placeholder="Introduce el nuevo correo..." name="new_username"
-                            value="<?php echo $mail;?>" required>
+                            value="<?php echo $mail; ?>" required>
                     </div>
                     <div class="moverInput">
                         <label for="pass">Modificar contraseña:</label><br>
                         <input type="password" id="pass" name="new_password"
-                            placeholder="Escribe la nueva contraseña..." value="<?php echo $password;?>"
+                            placeholder="Escribe la nueva contraseña..." value="<?php echo $password; ?>"
                             required>
                     </div>
+                    <!-- añadir parametro fecha nacimiento al update -->
+                    <div class="moverInput">
+                        <label>Modificar fecha nacimiento:</label><br>
+                        <input type="date" id="fecha_nacimiento" name="new_fecha_nacimiento" value="<?php echo $fechaNacimiento; ?>" required>
+                    </div>
 
-                    
                     <input type="submit" value="Update" name="update">
                     <input type="button" value="Update Ajax" name="updateAjax" id="updateAjax">
                     <input type="reset" value="Clear form">
